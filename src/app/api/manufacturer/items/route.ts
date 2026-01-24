@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
-import { Unit } from "@/model/Item";
+import { Pallet, Carton, Unit } from "@/model/Item";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 
@@ -17,12 +17,26 @@ export async function GET(req: Request) {
     }
 
     try {
-        // Fetch latest 50 Units for Label Printing
-        const items = await Unit.find({})
-            .sort({ createdAt: -1 })
-            .limit(50);
+        const { searchParams } = new URL(req.url);
+        const parentId = searchParams.get('parentId');
+        const type = searchParams.get('type') || 'PALLET'; // Default to Pallet view
 
-        return NextResponse.json({ success: true, items });
+        let items: any[] = [];
+
+        if (type === 'PALLET') {
+            // Top Level: Show Pallets
+            items = await Pallet.find({}).sort({ createdAt: -1 }).limit(50);
+        } else if (type === 'CARTON') {
+            // Second Level: Show Cartons for a specific Pallet
+            if (!parentId) return NextResponse.json({ success: false, message: "Missing Parent ID" }, { status: 400 });
+            items = await Carton.find({ parentId }).sort({ createdAt: -1 });
+        } else if (type === 'UNIT') {
+            // Third Level: Show Units for a specific Carton
+            if (!parentId) return NextResponse.json({ success: false, message: "Missing Parent ID" }, { status: 400 });
+            items = await Unit.find({ parentId }).sort({ createdAt: -1 });
+        }
+
+        return NextResponse.json({ success: true, items, view: type });
 
     } catch (error: any) {
         return NextResponse.json({ success: false, message: error.message }, { status: 500 });

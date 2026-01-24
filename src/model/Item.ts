@@ -11,6 +11,7 @@ export interface IItem extends Document {
         location: string;
         timestamp: Date;
         scannedBy?: string; // Username of distributor
+        notes?: string;
     }[];
     createdAt: Date;
     updatedAt: Date;
@@ -21,7 +22,8 @@ const HistorySchema = new Schema({
     status: { type: String, required: true },
     location: { type: String, required: true },
     timestamp: { type: Date, default: Date.now },
-    scannedBy: { type: String }
+    scannedBy: { type: String },
+    notes: { type: String }
 });
 
 // 1. PALLET Model

@@ -29,7 +29,15 @@ export default function LoginPage() {
             setError(res.error);
             setLoading(false);
         } else {
-            router.push("/manufacturer/dashboard");
+            // Check session to determine role
+            const sessionRes = await fetch("/api/auth/session");
+            const session = await sessionRes.json();
+
+            if (session?.user?.role === 'DISTRIBUTOR') {
+                router.push("/distributor/dashboard");
+            } else {
+                router.push("/manufacturer/dashboard");
+            }
             router.refresh();
         }
     };

@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
 
     try {
-        const { username, password } = await req.json();
+        const { username, password, city, pincode, gps } = await req.json();
 
         if (!username || !password) {
             return NextResponse.json({ success: false, message: "Username and password are required" }, { status: 400 });
@@ -27,10 +27,30 @@ export async function POST(req: Request) {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
+
+        let geo = { type: 'Point', coordinates: [0, 0] };
+        if (gps) {
+            // EXPECTED: "lat, long" -> e.g. "28.7041, 77.1025"
+            // GEOJSON: [longitude, latitude] -> [77.1025, 28.7041]
+            try {
+                const parts = gps.split(',').map((p: string) => parseFloat(p.trim()));
+                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                    geo.coordinates = [parts[1], parts[0]]; // Swap to [Long, Lat]
+                }
+            } catch (e) {
+                console.warn("Invalid GPS format provided");
+            }
+        }
+
         const newUser = new User({
             username,
             password: hashedPassword,
-            role: 'DISTRIBUTOR'
+            role: 'DISTRIBUTOR',
+            location: {
+                city,
+                pincode,
+                geo
+            }
         });
 
         await newUser.save();
