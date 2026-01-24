@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
-import Item, { IItem } from '@/model/Item';
+import { Pallet, Carton, Unit } from '@/model/Item';
 import { generateSchema } from '@/schemas/generateSchema';
 import { generateSSCC, generateCustomSerial } from '@/helpers/generator';
 import { generateHash, getShortHash } from '@/helpers/crypto';
@@ -17,84 +17,83 @@ export async function POST(req: NextRequest) {
         }
 
         const { type, count, parentId } = result.data;
-
         await dbConnect();
 
-        // 2. Resolve Hierarchy (if parentId provided)
-        let parentPath = ','; // Default root path (or empty)
+        // 2. Select Model
+        let Model: any;
+        switch (type) {
+            case 'PALLET': Model = Pallet; break;
+            case 'CASE': Model = Carton; break; // Frontend sends CASE, Model is Carton
+            case 'UNIT': Model = Unit; break;
+            default: return NextResponse.json({ error: 'Invalid Type' }, { status: 400 });
+        }
+
+        // 3. Resolve Hierarchy (if parentId provided)
         let parentObjectId: mongoose.Types.ObjectId | undefined;
+        // Note: Schemas don't stickly enforce `path` field, but we can compute it if needed. 
+        // For now, just linking parentId is sufficient for the defined Schemas (Unit/Carton have parentId).
 
         if (parentId) {
-            const parent = await Item.findOne({ serial: parentId }); // Identify parent by Serial? Or ObjectId? User sends Serial likely.
-            // Let's assume input is Serial for usability, but we link via ObjectId.
-            // Or if parentId is indeed ObjectId string. 
-            // The schema says string. Let's try to find by ID first, then serial.
+            // Find parent across collections (since specific parent type isn't passed explicitly)
+            // But realistically: Unit -> Carton, Carton -> Pallet.
+            // If creating UNIT, parent is CARTON. If creating CASE, parent is PALLET.
 
-            let parentDoc = null;
+            let parentDoc: any = null;
             if (mongoose.Types.ObjectId.isValid(parentId)) {
-                parentDoc = await Item.findById(parentId);
+                parentDoc = await Pallet.findById(parentId).lean() ||
+                    await Carton.findById(parentId).lean();
             } else {
-                parentDoc = await Item.findOne({ serial: parentId });
+                parentDoc = await Pallet.findOne({ serial: parentId }).lean() ||
+                    await Carton.findOne({ serial: parentId }).lean();
             }
 
             if (!parentDoc) {
                 return NextResponse.json({ error: 'Parent Item not found' }, { status: 404 });
             }
-
             parentObjectId = parentDoc._id;
-            // Inherit path: Parent's path + Parent's ID
-            // If parent path is ",", then new path is ",PARENT_ID,"
-            parentPath = `${parentDoc.path || ','}${parentDoc._id},`;
         }
 
-        // 3. In-Memory Generation Loop (Performance: Avoid DB calls inside loop)
-        const batch: Partial<IItem>[] = [];
+        // 4. In-Memory Generation Loop
+        const batch: any[] = [];
         const startTimeResult = Date.now();
-
-        // Get a base counter (in real app, this should be atomic from DB)
-        // For Hackathon, use Date.now() + index to ensure uniqueness within this batch
-        // To strictly follow GS1 counter, we might need a counter DB. 
-        // Let's assume strict uniqueness is handled by (Timestamp + LoopIndex) for now.
         const baseCounter = Math.floor(Math.random() * 100000);
 
         for (let i = 0; i < count; i++) {
             // A. Generate ID
             let serial = '';
-            let sscc = undefined;
             const uniqueCounter = baseCounter + i;
 
             if (type === 'PALLET') {
-                sscc = generateSSCC(uniqueCounter);
-                serial = sscc;
+                serial = generateSSCC(uniqueCounter);
             } else {
                 serial = generateCustomSerial(uniqueCounter);
             }
 
-            // B. Security Hash (SHA256)
-            // SHA256(Serial + Timestamp + Type + Salt)
-            const timestamp = new Date(); // Use Date object for mongoose
+            // B. Security Hash
+            const timestamp = new Date();
             const fullHash = generateHash(serial, timestamp.toISOString(), type);
             const shortHash = getShortHash(fullHash);
 
             // C. Construct Object
             batch.push({
                 serial,
-                sscc,
-                type,
-                parentId: parentObjectId,
-                path: parentPath,
-                hash: shortHash,
-                fullHash: fullHash,
+                // hash: fullHash (long), shortHash: shortHash (short)
+                hash: fullHash,
+                shortHash: shortHash,
+                parentId: parentObjectId, // Schemas ignore this if not defined (e.g. Pallet)
                 status: 'CREATED',
-                createdAt: timestamp
+                history: [{
+                    status: 'CREATED',
+                    location: 'MANUFACTURER_FACILITY', // Default
+                    timestamp: timestamp,
+                    scannedBy: 'SYSTEM',
+                    notes: 'Batch Generated'
+                }]
             });
         }
 
-        // 4. Bulk Write (Performance: Single DB Roundtrip)
-        const options = { ordered: false }; // Continue even if one fails (unlikely due to uniqueness logic)
-        // Actually, ordered: false is faster.
-
-        const dbResult = await Item.insertMany(batch, options);
+        // 5. Bulk Write
+        const dbResult = await Model.insertMany(batch, { ordered: false });
 
         const duration = Date.now() - startTimeResult;
 
