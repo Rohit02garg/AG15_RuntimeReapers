@@ -3,13 +3,20 @@ import dbConnect from "@/lib/dbConnect";
 import User from "@/model/User";
 import bcrypt from "bcryptjs";
 
+import { userRegistrationSchema } from "@/schemas/userSchema";
+
 export async function POST(req: NextRequest) {
     try {
-        const { username, password, role } = await req.json();
+        const body = await req.json();
 
-        if (!username || !password) {
-            return NextResponse.json({ message: "Missing fields" }, { status: 400 });
+        // Zod Validation
+        const result = userRegistrationSchema.safeParse(body);
+        if (!result.success) {
+            const errorMessage = (result.error as any).errors.map((e: any) => e.message).join(", ");
+            return NextResponse.json({ message: errorMessage }, { status: 400 });
         }
+
+        const { username, password, role } = result.data;
 
         await dbConnect();
 

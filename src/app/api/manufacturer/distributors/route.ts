@@ -17,7 +17,7 @@ export async function GET(req: Request) {
 
     try {
         const distributors = await User.find({ role: 'DISTRIBUTOR' })
-            .select('username location createdAt') // Select only needed fields
+            .select('username location createdAt email phone') // Select only needed fields
             .sort({ createdAt: -1 });
 
         return NextResponse.json({ success: true, distributors });

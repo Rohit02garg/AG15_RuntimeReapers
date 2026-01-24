@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 export default function RegisterDistributor() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [city, setCity] = useState('');
     const [pincode, setPincode] = useState('');
     const [gps, setGps] = useState('');
@@ -20,7 +22,7 @@ export default function RegisterDistributor() {
             const res = await fetch('/api/manufacturer/register-distributor', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password, city, pincode, gps })
+                body: JSON.stringify({ username, password, email, phone, city, pincode, gps })
             });
 
             const data = await res.json();
@@ -59,6 +61,23 @@ export default function RegisterDistributor() {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <input
+                            type="email"
+                            placeholder="Email (Optional)"
+                            className="p-3 border rounded focus:border-blue-500 outline-none"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Phone (Optional)"
+                            className="p-3 border rounded focus:border-blue-500 outline-none"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                        />
+                    </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <input

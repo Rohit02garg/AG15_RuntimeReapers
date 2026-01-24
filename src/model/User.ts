@@ -4,6 +4,8 @@ export interface IUser extends Document {
     username: string;
     password: string; // Hashed
     role: 'MANUFACTURER' | 'DISTRIBUTOR' | 'RETAILER';
+    email?: string;
+    phone?: string;
     location?: {
         city: string;
         pincode: string;
@@ -21,6 +23,8 @@ const UserSchema: Schema<IUser> = new Schema({
         unique: true,
         trim: true
     },
+    email: { type: String, trim: true },
+    phone: { type: String, trim: true },
     password: {
         type: String,
         required: [true, 'Password is required']

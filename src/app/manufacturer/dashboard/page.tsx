@@ -119,6 +119,7 @@ export default function ManufacturerDashboard() {
                         <li><a href="/manufacturer/inventory">View Generated Labels</a></li>
                         <li><a href="/manufacturer/distributors">Manage Distributors</a></li>
                         <li><a href="/verify">Public Verification Page</a></li>
+                        <li><a href="/manufacturer/recall" className="font-bold text-orange-600">Recall / Decommission Tool ⚠️</a></li>
                         <li><a href="/manufacturer/anomalies" className="text-red-600 font-bold">View Location Anomalies ⚠️</a></li>
                     </ul>
                 </div>

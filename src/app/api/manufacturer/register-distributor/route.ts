@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 
+import { distributorRegistrationSchema } from "@/schemas/userSchema";
+
 export async function POST(req: Request) {
     await dbConnect();
     const session = await getServerSession(authOptions);
@@ -15,11 +17,16 @@ export async function POST(req: Request) {
     }
 
     try {
-        const { username, password, city, pincode, gps } = await req.json();
+        const body = await req.json();
 
-        if (!username || !password) {
-            return NextResponse.json({ success: false, message: "Username and password are required" }, { status: 400 });
+        // Zod Validation
+        const result = distributorRegistrationSchema.safeParse(body);
+        if (!result.success) {
+            const errorMessage = (result.error as any).errors.map((e: any) => e.message).join(", ");
+            return NextResponse.json({ success: false, message: errorMessage }, { status: 400 });
         }
+
+        const { username, password, city, pincode, gps, email, phone } = result.data;
 
         const existingUser = await User.findOne({ username });
         if (existingUser) {
@@ -46,6 +53,8 @@ export async function POST(req: Request) {
             username,
             password: hashedPassword,
             role: 'DISTRIBUTOR',
+            email,
+            phone,
             location: {
                 city,
                 pincode,
