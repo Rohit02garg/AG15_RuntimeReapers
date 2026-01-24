@@ -21,8 +21,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, message: "Serial number is required" }, { status: 400 });
         }
 
-        // Search across collections
-        let item = await Pallet.findOne({ serial });
+        // 1. Identify Item and Type
+        let item: any = await Pallet.findOne({ serial });
         let type = 'PALLET';
         let Model: any = Pallet;
 
@@ -42,21 +42,52 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, message: "Item not found" }, { status: 404 });
         }
 
-        // Update Status
-        item.status = 'RECALLED';
-        item.history.push({
+        const recallEvent = {
             status: 'RECALLED',
             location: user.location?.city || 'Headquarters',
             timestamp: new Date(),
             scannedBy: user.username,
             notes: reason || 'Batch Decommissioned by Manufacturer'
-        });
+        };
 
-        await item.save();
+        // 2. Recursive Logic
+        let affectedCount = 1;
+
+        // Helper to update status and history
+        const markRecalled = async (doc: any) => {
+            doc.status = 'RECALLED';
+            doc.history.push(recallEvent);
+            await doc.save();
+        };
+
+        await markRecalled(item);
+
+        if (type === 'PALLET') {
+            // Find Child Cartons
+            const cartons = await Carton.find({ parentId: item._id });
+            for (const carton of cartons) {
+                await markRecalled(carton);
+                affectedCount++;
+
+                // Find Child Units of Carton
+                const units = await Unit.find({ parentId: carton._id });
+                for (const unit of units) {
+                    await markRecalled(unit);
+                    affectedCount++;
+                }
+            }
+        } else if (type === 'CARTON') {
+            // Find Child Units
+            const units = await Unit.find({ parentId: item._id });
+            for (const unit of units) {
+                await markRecalled(unit);
+                affectedCount++;
+            }
+        }
 
         return NextResponse.json({
             success: true,
-            message: `${type} ${serial} has been RECALLED successfully.`
+            message: `${type} ${serial} and ${affectedCount - 1} dependent items have been RECALLED.`
         });
 
     } catch (error: any) {

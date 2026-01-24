@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IUser extends Document {
     username: string;
+    businessId?: string; // Unique Business Registration ID (e.g., GSTIN, EIN)
     password: string; // Hashed
     role: 'MANUFACTURER' | 'DISTRIBUTOR' | 'RETAILER';
     email?: string;
@@ -22,6 +23,12 @@ const UserSchema: Schema<IUser> = new Schema({
         required: [true, 'Username is required'],
         unique: true,
         trim: true
+    },
+    businessId: {
+        type: String,
+        trim: true,
+        unique: true,
+        sparse: true // Allow null/undefined for other roles, but unique if present
     },
     email: { type: String, trim: true },
     phone: { type: String, trim: true },

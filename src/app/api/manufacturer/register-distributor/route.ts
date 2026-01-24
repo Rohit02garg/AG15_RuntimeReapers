@@ -22,15 +22,31 @@ export async function POST(req: Request) {
         // Zod Validation
         const result = distributorRegistrationSchema.safeParse(body);
         if (!result.success) {
-            const errorMessage = (result.error as any).errors.map((e: any) => e.message).join(", ");
-            return NextResponse.json({ success: false, message: errorMessage }, { status: 400 });
+            const flattened = result.error.flatten().fieldErrors;
+            const fieldErrors: any = {};
+
+            // Take the first error message for each field
+            Object.keys(flattened).forEach((key) => {
+                if (flattened[key as keyof typeof flattened]) {
+                    fieldErrors[key] = flattened[key as keyof typeof flattened]![0];
+                }
+            });
+
+            return NextResponse.json({ success: false, errors: fieldErrors, message: "Validation Failed" }, { status: 400 });
         }
 
-        const { username, password, city, pincode, gps, email, phone } = result.data;
+        const { username, password, businessId, city, pincode, gps, email, phone } = result.data;
 
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            return NextResponse.json({ success: false, message: "Username already taken" }, { status: 400 });
+        // Check for existing Username
+        const existingUsername = await User.findOne({ username });
+        if (existingUsername) {
+            return NextResponse.json({ success: false, errors: { username: "Username already taken" }, message: "Validation Failed" }, { status: 400 });
+        }
+
+        // Check for existing Business ID
+        const existingBusinessId = await User.findOne({ businessId });
+        if (existingBusinessId) {
+            return NextResponse.json({ success: false, errors: { businessId: "Business ID already registered" }, message: "Validation Failed" }, { status: 400 });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -51,6 +67,7 @@ export async function POST(req: Request) {
 
         const newUser = new User({
             username,
+            businessId,
             password: hashedPassword,
             role: 'DISTRIBUTOR',
             email,

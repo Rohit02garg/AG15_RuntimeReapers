@@ -67,9 +67,18 @@ export async function GET(req: Request, { params }: { params: { serial: string }
 
         // Deduplicate History based on Status + Location + Timestamp
         // (Batch generation often creates identical 'Created' events for hierarchy)
+        // SPECIAL HANDLING: For 'RECALLED', we only want ONE event to show up, 
+        // even if Pallet + Carton + Unit all have it.
         const uniqueEvents = new Map();
         finalHistory.forEach(event => {
-            const key = `${event.status}-${event.location}-${new Date(event.timestamp).getTime()}`;
+            // Standard Key
+            let key = `${event.status}-${event.location}-${new Date(event.timestamp).getTime()}`;
+
+            // If RECALLED (robust check), force a single key so we only keep one
+            if (event.status && event.status.trim().toUpperCase() === 'RECALLED') {
+                key = `RECALLED-EVENT`;
+            }
+
             if (!uniqueEvents.has(key)) {
                 uniqueEvents.set(key, event);
             }

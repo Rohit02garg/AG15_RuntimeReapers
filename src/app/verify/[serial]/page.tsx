@@ -35,37 +35,44 @@ export default function RedThreadPage() {
     if (loading) return (
         <div className="flex h-screen items-center justify-center bg-black text-white">
             <div className="animate-pulse flex flex-col items-center">
-                <div className="h-12 w-12 border-4 border-t-red-500 border-gray-700 rounded-full animate-spin mb-4"></div>
-                <p className="text-xl font-mono text-red-500 tracking-widest">TRACING LINEAGE...</p>
+                <div className="h-12 w-12 border-4 border-t-primary border-gray-700 rounded-full animate-spin mb-4 shadow-sm"></div>
+                <p className="text-xl font-mono text-primary tracking-widest neon-text">TRACING LINEAGE...</p>
             </div>
         </div>
     );
 
     if (error) return (
         <div className="flex h-screen items-center justify-center bg-black text-white p-8">
-            <div className="text-center max-w-lg border border-red-800 p-8 rounded bg-red-900/20 backdrop-blur">
-                <h1 className="text-4xl font-bold text-red-500 mb-4">CONNECTION LOST</h1>
+            <div className="text-center max-w-lg border border-orange-800 p-8 rounded bg-orange-900/20 backdrop-blur">
+                <h1 className="text-4xl font-bold text-orange-500 mb-4">CONNECTION LOST</h1>
                 <p className="text-gray-300 mb-6">{error}</p>
-                <a href="/verify" className="text-red-400 underline hover:text-red-300">Try Another ID</a>
+                <a href="/verify" className="text-orange-400 underline hover:text-orange-300">Try Another ID</a>
             </div>
         </div>
     );
 
     const isSuspect = data?.integrity === 'SUSPECT';
-    const primaryColor = isSuspect ? 'red' : 'green';
+    const isRecalled = data?.status === 'RECALLED';
+
+    let primaryColor = 'green';
+    if (isSuspect) primaryColor = 'orange';
+    if (isRecalled) primaryColor = 'red';
 
     return (
-        <div className="min-h-screen bg-black text-gray-100 font-sans selection:bg-red-500/30">
+        <div className="min-h-screen bg-black text-gray-100 font-sans selection:bg-primary/30">
             {/* Header */}
             <header className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur border-b border-gray-800">
                 <div className="max-w-3xl mx-auto px-6 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-2">
                         <div className={`w-3 h-3 rounded-full animate-pulse bg-${primaryColor}-500 shadow-[0_0_10px_var(--tw-shadow-color)] shadow-${primaryColor}-500/50`}></div>
-                        <h1 className="text-xl font-bold tracking-wider">SMART<span className="text-red-600">TRACE</span></h1>
+                        <h1 className="text-xl font-bold tracking-wider">SMART<span className="text-white">TRACE</span></h1>
                     </div>
                     <div>
-                        <span className={`px-3 py-1 rounded text-xs font-bold tracking-widest border ${isSuspect ? 'border-red-600 text-red-500 bg-red-900/20' : 'border-green-600 text-green-500 bg-green-900/20'}`}>
-                            {data?.integrity}
+                        <span className={`px-3 py-1 rounded text-xs font-bold tracking-widest border 
+                            ${isRecalled ? 'border-red-600 text-red-500 bg-red-900/20' :
+                                isSuspect ? 'border-orange-600 text-orange-500 bg-orange-900/20' :
+                                    'border-green-600 text-green-500 bg-green-900/20'}`}>
+                            {isRecalled ? 'RECALLED' : (data?.integrity || 'VERIFIED')}
                         </span>
                     </div>
                 </div>
@@ -76,6 +83,13 @@ export default function RedThreadPage() {
 
                 {/* Product Info */}
                 <div className="mb-16 text-center">
+                    {isRecalled && (
+                        <div className="mb-8 p-6 border-2 border-red-600 bg-red-950/30 rounded-lg animate-pulse">
+                            <h1 className="text-3xl font-black text-red-500 tracking-widest mb-2">⚠ PRODUCT RECALLED ⚠</h1>
+                            <p className="text-red-200 text-sm font-mono">DO NOT SELL OR CONSUME. RETURN TO MANUFACTURER IMMEDIATELY.</p>
+                        </div>
+                    )}
+
                     <h2 className="text-sm text-gray-500 uppercase tracking-[0.2em] mb-2">{data?.type}</h2>
                     <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white mb-4 glitch-text">
                         {data?.serial}
@@ -87,31 +101,31 @@ export default function RedThreadPage() {
                     </div>
                 </div>
 
-                {/* THE RED THREAD TIMELINE */}
+                {/* THE DIGITAL THREAD TIMELINE */}
                 <div className="relative">
                     {/* The Center Line */}
-                    <div className={`absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 -ml-px bg-gradient-to-b from-transparent ${isSuspect ? 'via-red-600' : 'via-green-600'} to-transparent opacity-50`}></div>
+                    <div className={`absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 -ml-px bg-gradient-to-b from-transparent ${isRecalled ? 'via-red-600' : isSuspect ? 'via-orange-600' : 'via-green-600'} to-transparent opacity-50`}></div>
 
                     <div className="space-y-12">
                         {data?.history.map((event: any, index: number) => {
                             const isEventSuspect = event.status === 'SUSPECT';
-                            const eventColor = isEventSuspect ? 'red' : (isSuspect ? 'gray' : 'green');
+                            const isEventRecalled = event.status === 'RECALLED';
 
                             return (
                                 <div key={index} className={`relative flex items-center md:justify-between group ${index % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
 
                                     {/* Timeline Node */}
                                     <div className="absolute left-4 md:left-1/2 -ml-3 md:-ml-3 w-6 h-6 rounded-full border-4 border-black bg-gray-800 z-10 shadow-[0_0_15px_rgba(0,0,0,1)] group-hover:scale-110 transition-transform duration-300 flex items-center justify-center">
-                                        <div className={`w-2 h-2 rounded-full ${isEventSuspect ? 'bg-red-500 animate-ping' : 'bg-gray-400 group-hover:bg-white'}`}></div>
+                                        <div className={`w-2 h-2 rounded-full ${isEventRecalled ? 'bg-red-500 animate-ping' : isEventSuspect ? 'bg-orange-500 animate-ping' : 'bg-gray-400 group-hover:bg-white'}`}></div>
                                     </div>
 
                                     {/* Empty Space for Grid */}
                                     <div className="w-0 md:w-5/12"></div>
 
                                     {/* Content Card */}
-                                    <div className="ml-12 md:ml-0 w-full md:w-5/12 bg-gray-900/50 border border-gray-800 p-6 rounded-lg backdrop-blur-sm hover:border-gray-600 transition-colors shadow-lg">
+                                    <div className={`ml-12 md:ml-0 w-full md:w-5/12 bg-gray-900/50 border ${isEventRecalled ? 'border-red-900/50' : 'border-gray-800'} p-6 rounded-lg backdrop-blur-sm hover:border-gray-600 transition-colors shadow-lg`}>
                                         <div className="flex justify-between items-start mb-2">
-                                            <h3 className={`font-bold text-lg tracking-wide ${isEventSuspect ? 'text-red-500' : 'text-white'}`}>
+                                            <h3 className={`font-bold text-lg tracking-wide ${isEventRecalled ? 'text-red-500' : isEventSuspect ? 'text-orange-500' : 'text-white'}`}>
                                                 {event.status}
                                             </h3>
                                             <span className="text-xs font-mono text-gray-500">
@@ -131,7 +145,7 @@ export default function RedThreadPage() {
                                         )}
 
                                         {event.notes && (
-                                            <div className="mt-3 p-2 bg-red-900/20 border border-red-900/50 rounded text-xs text-red-300 font-mono">
+                                            <div className="mt-3 p-2 bg-orange-900/20 border border-orange-900/50 rounded text-xs text-orange-300 font-mono">
                                                 ⚠ {event.notes}
                                             </div>
                                         )}

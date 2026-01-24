@@ -14,8 +14,12 @@ export const distributorRegistrationSchema = z.object({
     username: z.string()
         .min(3, "Username must be at least 3 characters")
         .trim(),
-    email: z.string().email("Invalid email format").optional().or(z.literal('')),
-    phone: z.string().min(10, "Phone number must be at least 10 digits").optional().or(z.literal('')),
+    businessId: z.string()
+        .min(5, "Business ID must be at least 5 characters")
+        .trim()
+        .toUpperCase(), // Normalize to uppercase
+    email: z.string().email("Invalid email format"),
+    phone: z.string().min(10, "Phone number must be at least 10 digits"),
     password: z.string()
         .min(6, "Password must be at least 6 characters"),
     city: z.string().min(2, "City is required"),

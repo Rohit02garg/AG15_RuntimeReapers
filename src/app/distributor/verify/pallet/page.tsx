@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import QRScanner from '@/components/QRScanner';
 
 export default function VerifyPalletPage() {
     const router = useRouter();
@@ -10,6 +11,7 @@ export default function VerifyPalletPage() {
     const [status, setStatus] = useState('RECEIVED');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showScanner, setShowScanner] = useState(false);
 
     const handleScan = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,10 +45,6 @@ export default function VerifyPalletPage() {
                     setLoading(false);
                 }
             }, (error) => {
-                // If Geo fails, proceed without it (or block? Requirements imply we want to track it.)
-                // Let's proceed but warn. Or maybe just send without GPS.
-                // For "Anomaly Detection", GPS is critical. But we shouldn't block ops if GPS fails?
-                // Let's just proceed without GPS variable (Scan API handles missing GPS gracefully by skipping anomaly check)
                 submitWithoutGps();
             });
         } else {
@@ -73,6 +71,23 @@ export default function VerifyPalletPage() {
 
     return (
         <div className="flex min-h-screen items-center justify-center p-8 bg-gray-900 text-white">
+            {showScanner && (
+                <QRScanner
+                    onScan={(val) => {
+                        try {
+                            const url = new URL(val);
+                            const s = url.searchParams.get('s');
+                            if (s) setSerial(s);
+                            else setSerial(val);
+                        } catch (e) {
+                            setSerial(val);
+                        }
+                        setShowScanner(false);
+                    }}
+                    onClose={() => setShowScanner(false)}
+                />
+            )}
+
             <div className="w-full max-w-md bg-gray-800 p-8 rounded shadow-lg border border-gray-700">
                 <button onClick={() => router.push('/distributor/dashboard')} className="text-gray-400 text-sm mb-4 hover:text-white">
                     &larr; Back to Dashboard
@@ -82,13 +97,22 @@ export default function VerifyPalletPage() {
                 <form onSubmit={handleScan} className="flex flex-col gap-4">
                     <div>
                         <label className="block text-sm mb-1 text-gray-300">Pallet SSCC (Scan QR)</label>
-                        <input
-                            className="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:border-blue-500 text-white"
-                            value={serial}
-                            onChange={e => setSerial(e.target.value)}
-                            placeholder="Enter SSCC..."
-                            required
-                        />
+                        <div className="flex gap-2">
+                            <input
+                                className="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:border-blue-500 text-white font-mono"
+                                value={serial}
+                                onChange={e => setSerial(e.target.value)}
+                                placeholder="Enter SSCC..."
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowScanner(true)}
+                                className="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded transition-colors"
+                            >
+                                SCAN
+                            </button>
+                        </div>
                     </div>
 
                     <div>
