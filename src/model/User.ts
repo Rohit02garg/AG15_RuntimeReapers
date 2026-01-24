@@ -15,6 +15,8 @@ export interface IUser extends Document {
             coordinates: number[]; // [longitude, latitude]
         };
     };
+    forgotPasswordToken?: string;
+    forgotPasswordTokenExpiry?: Date;
 }
 
 const UserSchema: Schema<IUser> = new Schema({
@@ -56,7 +58,9 @@ const UserSchema: Schema<IUser> = new Schema({
                 required: false
             }
         }
-    }
+    },
+    forgotPasswordToken: String,
+    forgotPasswordTokenExpiry: Date,
 }, { timestamps: true });
 
 // Index for Geospatial Queries

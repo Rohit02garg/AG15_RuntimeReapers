@@ -35,9 +35,9 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
                                 onScan(result[0].rawValue);
                             }
                         }}
-                        onError={(error) => console.log(error?.message)}
+                        onError={(error: any) => console.log(error?.message)}
+                        sound={false}
                         components={{
-                            audio: false,
                             onOff: false,
                             torch: true,
                             zoom: true,

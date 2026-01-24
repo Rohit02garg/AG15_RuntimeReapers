@@ -1,0 +1,27 @@
+﻿.next/dev/types/validator.ts(243,31): error TS2344: Type 'typeof import("C:/Users/gargr/SmartTrace/src/app/api/hierarchy/[serial]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/hierarchy/[serial]">'.
+  Types of property 'GET' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { serial: string; }; }) => Promise<NextResponse<{ success: boolean; scannedItem: Document<unknown, {}, IItem, {}, DefaultSchemaOptions> & IItem & Required<...> & { ...; } & { ...; }; tree: any; totalNodes: number; }> | NextResponse<...>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ serial: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ serial: string; }>; }' is not assignable to type '{ params: { serial: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'serial' is missing in type 'Promise<{ serial: string; }>' but required in type '{ serial: string; }'.
+.next/dev/types/validator.ts(306,31): error TS2344: Type 'typeof import("C:/Users/gargr/SmartTrace/src/app/api/public/verify/[serial]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/public/verify/[serial]">'.
+  Types of property 'GET' are incompatible.
+    Type '(req: Request, { params }: { params: { serial: string; }; }) => Promise<NextResponse<{ success: boolean; item: { serial: any; type: string | null; status: any; integrity: string; history: any[]; hash: any; createdAt: any; }; }> | NextResponse<...>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ serial: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ serial: string; }>; }' is not assignable to type '{ params: { serial: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'serial' is missing in type 'Promise<{ serial: string; }>' but required in type '{ serial: string; }'.
+.next/dev/types/validator.ts(333,31): error TS2344: Type 'typeof import("C:/Users/gargr/SmartTrace/src/app/api/validate/[serial]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/validate/[serial]">'.
+  Types of property 'GET' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { serial: string; }; }) => Promise<NextResponse<{ valid: boolean; message: string; }> | NextResponse<{ error: any; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ serial: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ serial: string; }>; }' is not assignable to type '{ params: { serial: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'serial' is missing in type 'Promise<{ serial: string; }>' but required in type '{ serial: string; }'.
+src/app/api/hierarchy/[serial]/route.ts(48,24): error TS2339: Property 'path' does not exist on type 'Document<unknown, {}, IItem, {}, DefaultSchemaOptions> & IItem & Required<{ _id: ObjectId; }> & { __v: number; } & { ...; }'.
+src/app/api/hierarchy/[serial]/route.ts(48,43): error TS2339: Property 'path' does not exist on type 'Document<unknown, {}, IItem, {}, DefaultSchemaOptions> & IItem & Required<{ _id: ObjectId; }> & { __v: number; } & { ...; }'.
+src/app/api/hierarchy/[serial]/route.ts(49,36): error TS2339: Property 'path' does not exist on type 'Document<unknown, {}, IItem, {}, DefaultSchemaOptions> & IItem & Required<{ _id: ObjectId; }> & { __v: number; } & { ...; }'.
+src/app/api/verify-hierarchy/route.ts(35,33): error TS2339: Property 'path' does not exist on type 'Document<unknown, {}, IItem, {}, DefaultSchemaOptions> & IItem & Required<{ _id: ObjectId; }> & { __v: number; } & { ...; }'.
+src/app/forgot-password/page.tsx(3,19): error TS2307: Cannot find module 'axios' or its corresponding type declarations.
+src/app/reset-password/page.tsx(3,19): error TS2307: Cannot find module 'axios' or its corresponding type declarations.

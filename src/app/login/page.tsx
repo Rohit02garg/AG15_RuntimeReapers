@@ -79,6 +79,11 @@ export default function LoginPage() {
                                 placeholder="••••••"
                             />
                         </div>
+                        <div className="flex justify-end">
+                            <a href="/forgot-password" className="text-xs text-primary hover:text-primary/80 transition-colors">
+                                Forgot Access Key?
+                            </a>
+                        </div>
 
                         {error && (
                             <div className="p-3 bg-destructive/10 border border-destructive/20 rounded text-center">
