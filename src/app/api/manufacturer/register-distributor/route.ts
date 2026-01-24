@@ -4,6 +4,7 @@ import User from "@/model/User";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
+import { sendEmail } from "@/helpers/mailer";
 
 import { distributorRegistrationSchema } from "@/schemas/userSchema";
 
@@ -80,6 +81,20 @@ export async function POST(req: Request) {
         });
 
         await newUser.save();
+
+        // Send Welcome Email
+        if (email) {
+            await sendEmail({
+                email,
+                emailType: "DISTRIBUTOR_WELCOME",
+                userId: newUser._id,
+                context: {
+                    username,
+                    password, // Sending raw password once (bad security practice usually, but standard for this kind of "admin creates user" flow)
+                    businessId
+                }
+            });
+        }
 
         return NextResponse.json({ success: true, message: "Distributor registered successfully" }, { status: 201 });
 

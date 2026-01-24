@@ -61,6 +61,7 @@ export default function DistributorsList() {
                                         <th className="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Phone</th>
                                         <th className="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Registered On</th>
                                         <th className="px-6 py-4 text-left text-xs font-bold text-primary uppercase tracking-wider">Coordinates</th>
+                                        <th className="px-6 py-4 text-right text-xs font-bold text-primary uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/10 bg-transparent">
@@ -84,6 +85,11 @@ export default function DistributorsList() {
                                                 {d.location?.geo?.coordinates ?
                                                     `${d.location.geo.coordinates[1].toFixed(4)}, ${d.location.geo.coordinates[0].toFixed(4)}` :
                                                     'N/A'}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <Link href={`/manufacturer/distributors/${d._id}`} className="text-primary hover:text-primary/80 transition-colors">
+                                                    Edit
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))}
