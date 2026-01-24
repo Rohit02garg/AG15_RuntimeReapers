@@ -152,6 +152,14 @@ export default function ManufacturerDashboard() {
                             <span className="text-2xl group-hover:translate-x-1 transition-transform">🌐</span>
                         </Link>
 
+                        <Link href="/manufacturer/reports" className="glass-card p-6 rounded-xl flex items-center justify-between group border-l-4 border-l-blue-500 hover:border-l-blue-400">
+                            <div>
+                                <h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">Distributor Reports</h3>
+                                <p className="text-sm text-muted-foreground">View incoming network feedback.</p>
+                            </div>
+                            <span className="text-2xl group-hover:translate-x-1 transition-transform">📥</span>
+                        </Link>
+
                         <Link href="/manufacturer/recall" className="glass-card p-6 rounded-xl flex items-center justify-between group border-l-4 border-l-orange-500 hover:border-l-orange-400">
                             <div>
                                 <h3 className="text-lg font-bold text-white group-hover:text-orange-400 transition-colors">Recall Protocol ⚠️</h3>

@@ -4,31 +4,56 @@ import Link from 'next/link';
 
 export default function DistributorDashboard() {
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-900 text-white">
-            <h1 className="text-3xl font-bold mb-12 text-blue-400">Distributor Dashboard</h1>
+        <div className="flex min-h-screen flex-col items-center justify-center p-8 bg-black text-white relative overflow-hidden">
+            {/* Background Ambience */}
+            <div className="absolute top-0 right-1/2 translate-x-1/2 w-[800px] h-[400px] bg-blue-900/20 blur-[120px] rounded-full pointer-events-none" />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-                {/* Pallet Verification */}
-                <Link href="/distributor/verify/pallet" className="group">
-                    <div className="bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700 hover:border-blue-500 transition-all hover:bg-gray-750 flex flex-col items-center text-center h-full">
-                        <div className="bg-blue-900/50 p-4 rounded-full mb-6 group-hover:bg-blue-600 transition-colors">
-                            <span className="text-4xl">📦</span>
-                        </div>
-                        <h2 className="text-2xl font-bold mb-2 text-white">Verify Pallet</h2>
-                        <p className="text-gray-400">Scan SSCC labels to verify intake of Pallets.</p>
-                    </div>
-                </Link>
+            <div className="z-10 w-full max-w-6xl space-y-12">
+                <div className="text-center">
+                    <h1 className="text-4xl font-bold mb-4 neon-text text-white">Distributor Terminal</h1>
+                    <p className="text-neutral-400">Manage intake, verification, and reporting.</p>
+                </div>
 
-                {/* Carton Verification */}
-                <Link href="/distributor/verify/carton" className="group">
-                    <div className="bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700 hover:border-green-500 transition-all hover:bg-gray-750 flex flex-col items-center text-center h-full">
-                        <div className="bg-green-900/50 p-4 rounded-full mb-6 group-hover:bg-green-600 transition-colors">
-                            <span className="text-4xl">📦</span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Pallet Verification */}
+                    <Link href="/distributor/verify/pallet" className="group">
+                        <div className="glass-panel p-8 rounded-2xl border border-white/10 hover:border-blue-500/50 hover:bg-white/5 transition-all text-center h-full flex flex-col items-center justify-center">
+                            <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform">
+                                🏗️
+                            </div>
+                            <h2 className="text-xl font-bold mb-2 text-white">Verify Pallet</h2>
+                            <p className="text-sm text-neutral-400">Scan SSCC labels for bulk intake verification.</p>
                         </div>
-                        <h2 className="text-2xl font-bold mb-2 text-white">Verify Carton</h2>
-                        <p className="text-gray-400">Scan Carton Serials to verify individual boxes.</p>
-                    </div>
-                </Link>
+                    </Link>
+
+                    {/* Carton Verification */}
+                    <Link href="/distributor/verify/carton" className="group">
+                        <div className="glass-panel p-8 rounded-2xl border border-white/10 hover:border-green-500/50 hover:bg-white/5 transition-all text-center h-full flex flex-col items-center justify-center">
+                            <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform">
+                                📦
+                            </div>
+                            <h2 className="text-xl font-bold mb-2 text-white">Verify Carton</h2>
+                            <p className="text-sm text-neutral-400">Scan individual Carton Serials for checking.</p>
+                        </div>
+                    </Link>
+
+                    {/* Submit Report */}
+                    <Link href="/distributor/report" className="group">
+                        <div className="glass-panel p-8 rounded-2xl border border-white/10 hover:border-orange-500/50 hover:bg-white/5 transition-all text-center h-full flex flex-col items-center justify-center">
+                            <div className="w-16 h-16 rounded-full bg-orange-500/20 flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform">
+                                📝
+                            </div>
+                            <h2 className="text-xl font-bold mb-2 text-white">Submit Report</h2>
+                            <p className="text-sm text-neutral-400">Send text reports or feedback to manufacturer.</p>
+                        </div>
+                    </Link>
+                </div>
+
+                <div className="text-center mt-12">
+                    <Link href="/" className="text-sm text-neutral-500 hover:text-white transition-colors">
+                        Logout / Return Home
+                    </Link>
+                </div>
             </div>
         </div>
     );
