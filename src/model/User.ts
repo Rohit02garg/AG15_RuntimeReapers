@@ -46,7 +46,7 @@ const UserSchema: Schema<IUser> = new Schema({
             }
         }
     }
-});
+}, { timestamps: true });
 
 // Index for Geospatial Queries
 UserSchema.index({ 'location.geo': '2dsphere' });

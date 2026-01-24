@@ -65,6 +65,51 @@ export async function POST(req: Request) {
             serial, location, status, stage: 'CONSUMER', notes
         });
 
+        // --- HIERARCHICAL HISTORY LOGIC ---
+        let finalHistory: any[] = [];
+
+        if (type === 'PALLET') {
+            finalHistory = item.history || [];
+        }
+        else if (type === 'CARTON') {
+            finalHistory = [...(item.history || [])];
+            if (item.parentId) {
+                const parentPallet = await Pallet.findById(item.parentId).lean();
+                if (parentPallet && parentPallet.history) {
+                    finalHistory = [...parentPallet.history, ...finalHistory];
+                }
+            }
+        }
+        else if (type === 'UNIT') {
+            // Logic: Grandparent Pallet + Parent Carton (Ignore Unit Journey)
+            if (item.parentId) {
+                const parentCarton = await Carton.findById(item.parentId).lean();
+                if (parentCarton) {
+                    if (parentCarton.history) {
+                        finalHistory = [...parentCarton.history];
+                    }
+                    if (parentCarton.parentId) {
+                        const grandParentPallet = await Pallet.findById(parentCarton.parentId).lean();
+                        if (grandParentPallet && grandParentPallet.history) {
+                            finalHistory = [...grandParentPallet.history, ...finalHistory];
+                        }
+                    }
+                }
+            }
+        }
+
+        // Deduplicate History based on Status + Location + Timestamp
+        const uniqueEvents = new Map();
+        finalHistory.forEach(event => {
+            const key = `${event.status}-${event.location}-${new Date(event.timestamp).getTime()}`;
+            if (!uniqueEvents.has(key)) {
+                uniqueEvents.set(key, event);
+            }
+        });
+        finalHistory = Array.from(uniqueEvents.values());
+
+        finalHistory.sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
         // 5. RETURN RESULT
         return NextResponse.json({
             status,
@@ -73,7 +118,7 @@ export async function POST(req: Request) {
                 serial: item.serial,
                 type: type, // Return the explicit type
                 status: item.status,
-                history: item.history
+                history: finalHistory
             }
         });
 
