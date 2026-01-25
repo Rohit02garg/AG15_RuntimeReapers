@@ -1,0 +1,4 @@
+﻿src/app/api/hierarchy/[serial]/route.ts(48,24): error TS2339: Property 'path' does not exist on type 'Document<unknown, {}, IItem, {}, DefaultSchemaOptions> & IItem & Required<{ _id: ObjectId; }> & { __v: number; } & { ...; }'.
+src/app/api/hierarchy/[serial]/route.ts(48,43): error TS2339: Property 'path' does not exist on type 'Document<unknown, {}, IItem, {}, DefaultSchemaOptions> & IItem & Required<{ _id: ObjectId; }> & { __v: number; } & { ...; }'.
+src/app/api/hierarchy/[serial]/route.ts(49,36): error TS2339: Property 'path' does not exist on type 'Document<unknown, {}, IItem, {}, DefaultSchemaOptions> & IItem & Required<{ _id: ObjectId; }> & { __v: number; } & { ...; }'.
+src/app/api/verify-hierarchy/route.ts(35,33): error TS2339: Property 'path' does not exist on type 'Document<unknown, {}, IItem, {}, DefaultSchemaOptions> & IItem & Required<{ _id: ObjectId; }> & { __v: number; } & { ...; }'.

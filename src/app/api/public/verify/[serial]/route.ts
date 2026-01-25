@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import { Unit, Carton, Pallet } from "@/model/Item";
 
-export async function GET(req: Request, { params }: { params: { serial: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ serial: string }> }) {
     await dbConnect();
-    const serial = params.serial;
+    const { serial } = await params;
 
     try {
         // Parallel search across all collections

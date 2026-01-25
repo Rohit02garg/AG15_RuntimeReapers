@@ -16,10 +16,10 @@ function buildTree(root: any, allItems: any[]) {
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { serial: string } }
+    { params }: { params: Promise<{ serial: string }> }
 ) {
     try {
-        const { serial } = params;
+        const { serial } = await params;
         await dbConnect();
 
         // 1. Find the requested item

@@ -5,10 +5,10 @@ import { validateLuhn } from '@/helpers/luhn';
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { serial: string } }
+    { params }: { params: Promise<{ serial: string }> }
 ) {
     try {
-        const { serial } = params;
+        const { serial } = await params;
 
         // 1. Math Validation (Luhn)
         // For Custom Serial: it ends with check digit.

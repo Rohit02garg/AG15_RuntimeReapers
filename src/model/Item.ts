@@ -4,6 +4,7 @@ export interface IItem extends Document {
     serial: string;
     type: 'UNIT' | 'CARTON' | 'PALLET';
     parentId?: mongoose.Types.ObjectId;
+    path?: string; // Materialized path for hierarchy query
     hash: string;
     status: 'CREATED' | 'SHIPPED' | 'DELIVERED' | 'SOLD' | 'RECALLED';
     history: {
@@ -32,6 +33,7 @@ const PalletSchema = new Schema({
     hash: { type: String, required: true },
     shortHash: { type: String, required: true }, // 8-char substring
     status: { type: String, default: 'CREATED' },
+    path: { type: String, index: true },
     history: [HistorySchema]
 }, { timestamps: true });
 
@@ -44,6 +46,7 @@ const CartonSchema = new Schema({
     hash: { type: String, required: true },
     shortHash: { type: String, required: true },
     status: { type: String, default: 'CREATED' },
+    path: { type: String, index: true },
     history: [HistorySchema]
 }, { timestamps: true });
 
@@ -56,6 +59,7 @@ const UnitSchema = new Schema({
     hash: { type: String, required: true },
     shortHash: { type: String, required: true },
     status: { type: String, default: 'CREATED' },
+    path: { type: String, index: true },
     history: [HistorySchema]
 }, { timestamps: true });
 
