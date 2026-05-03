@@ -99,3 +99,32 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         return NextResponse.json({ success: false, message: error.message }, { status: 500 });
     }
 }
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    await dbConnect();
+    const session = await getServerSession(authOptions);
+    const user = session?.user as any;
+
+    if (!session || user.role !== 'MANUFACTURER') {
+        return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        const { id } = await params;
+        const distributor = await User.findById(id);
+
+        if (!distributor) {
+            return NextResponse.json({ success: false, message: "Distributor not found" }, { status: 404 });
+        }
+
+        if (distributor.role !== 'DISTRIBUTOR') {
+            return NextResponse.json({ success: false, message: "Cannot delete non-distributor users" }, { status: 400 });
+        }
+
+        await User.findByIdAndDelete(id);
+        return NextResponse.json({ success: true, message: `Distributor "${distributor.username}" deleted successfully` });
+
+    } catch (error: any) {
+        return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    }
+}

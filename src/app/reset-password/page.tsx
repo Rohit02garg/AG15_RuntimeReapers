@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect, Suspense } from "react";
-import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 
@@ -29,11 +28,19 @@ function ResetPasswordContent() {
         setError("");
 
         try {
-            await axios.post("/api/auth/reset-password", { token, newPassword });
+            const res = await fetch("/api/auth/reset-password", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, newPassword })
+            });
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Invalid or expired token.');
+            }
             setMessage("Password reset successfully. Redirecting to login...");
             setTimeout(() => router.push("/login"), 2000);
         } catch (err: any) {
-            setError(err.response?.data?.error || "Invalid or expired token.");
+            setError(err.message || "Invalid or expired token.");
         } finally {
             setLoading(false);
         }

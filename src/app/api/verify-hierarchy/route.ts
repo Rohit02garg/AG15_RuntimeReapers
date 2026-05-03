@@ -1,12 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
-import Item from '@/model/Item';
+import { Pallet, Carton, Unit } from '@/model/Item';
 import { z } from 'zod';
 
 const verifySchema = z.object({
     parentSerial: z.string(),
     childSerial: z.string()
 });
+
+// Helper to find an item across all collections
+async function findItemBySerial(serial: string) {
+    const pallet = await Pallet.findOne({ serial });
+    if (pallet) return { item: pallet, type: 'PALLET' };
+
+    const carton = await Carton.findOne({ serial });
+    if (carton) return { item: carton, type: 'CARTON' };
+
+    const unit = await Unit.findOne({ serial });
+    if (unit) return { item: unit, type: 'UNIT' };
+
+    return null;
+}
 
 export async function POST(req: NextRequest) {
     try {
@@ -21,28 +35,30 @@ export async function POST(req: NextRequest) {
         await dbConnect();
 
         // Fetch both
-        const [parent, child] = await Promise.all([
-            Item.findOne({ serial: parentSerial }),
-            Item.findOne({ serial: childSerial })
+        const [parentResult, childResult] = await Promise.all([
+            findItemBySerial(parentSerial),
+            findItemBySerial(childSerial)
         ]);
 
-        if (!parent || !child) {
+        if (!parentResult || !childResult) {
             return NextResponse.json({ error: 'One or both items not found' }, { status: 404 });
         }
 
-        // Check Relationship
-        // Child path should contain Parent ID.
-        const isRelated = child.path?.includes(parent._id.toString());
+        const parent = parentResult.item;
+        const child = childResult.item;
+
+        // Check Relationship via parentId reference
+        const isRelated = child.parentId?.toString() === parent._id.toString();
 
         if (isRelated) {
             return NextResponse.json({
                 verified: true,
-                message: `CONFIRMED: ${child.type} ${childSerial} belongs to ${parent.type} ${parentSerial}`
+                message: `CONFIRMED: ${childResult.type} ${childSerial} belongs to ${parentResult.type} ${parentSerial}`
             });
         } else {
             return NextResponse.json({
                 verified: false,
-                message: `MISMATCH: ${child.type} ${childSerial} is NOT in ${parent.type} ${parentSerial}`
+                message: `MISMATCH: ${childResult.type} ${childSerial} is NOT in ${parentResult.type} ${parentSerial}`
             });
         }
 

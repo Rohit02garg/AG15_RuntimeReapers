@@ -1,6 +1,5 @@
 'use client';
 import { useState } from "react";
-import axios from "axios";
 import { Loader2, ShieldQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import Link from "next/link";
 
 export default function ForgotPasswordPage() {
-    const [email, setEmail] = useState("");
+    const [identifier, setIdentifier] = useState("");
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -20,10 +19,18 @@ export default function ForgotPasswordPage() {
         setError("");
 
         try {
-            await axios.post("/api/auth/forgot-password", { email });
-            setMessage("If an account exists with this email, you will receive a reset link.");
+            const res = await fetch("/api/auth/forgot-password", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identifier })
+            });
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || 'Something went wrong.');
+            }
+            setMessage("If an account exists, you will receive a reset link.");
         } catch (err: any) {
-            setError(err.response?.data?.message || "Something went wrong.");
+            setError(err.message || "Something went wrong.");
         } finally {
             setLoading(false);
         }
@@ -43,21 +50,20 @@ export default function ForgotPasswordPage() {
                     </div>
                     <CardTitle className="text-2xl font-bold text-white neon-text">Account Recovery</CardTitle>
                     <CardDescription className="text-muted-foreground">
-                        Enter your email to receive a password reset link
+                        Enter your email or username to receive a password reset link
                     </CardDescription>
                 </CardHeader>
 
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Email Address</label>
+                            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Email or Username</label>
                             <Input
-                                type="email"
                                 required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                value={identifier}
+                                onChange={(e) => setIdentifier(e.target.value)}
                                 className="bg-black/40 border-white/10 text-white placeholder:text-neutral-600 focus:border-primary focus:ring-primary/50"
-                                placeholder="name@company.com"
+                                placeholder="name@company.com or username"
                             />
                         </div>
 

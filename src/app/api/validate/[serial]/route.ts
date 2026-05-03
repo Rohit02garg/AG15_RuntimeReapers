@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
-import Item from '@/model/Item';
+import { Pallet, Carton, Unit } from '@/model/Item';
 import { validateLuhn } from '@/helpers/luhn';
 
 export async function GET(
@@ -25,8 +25,10 @@ export async function GET(
 
         await dbConnect();
 
-        // 2. DB Existence Check
-        const item = await Item.findOne({ serial });
+        // 2. DB Existence Check (search across all collections)
+        const item = await Pallet.findOne({ serial }).lean() ||
+                     await Carton.findOne({ serial }).lean() ||
+                     await Unit.findOne({ serial }).lean();
 
         if (!item) {
             return NextResponse.json({
@@ -36,10 +38,14 @@ export async function GET(
             }, { status: 200 });
         }
 
+        // Determine type from which collection matched
+        const type = await Pallet.findOne({ serial }).lean() ? 'PALLET' :
+                     await Carton.findOne({ serial }).lean() ? 'CARTON' : 'UNIT';
+
         return NextResponse.json({
             valid: true,
-            type: item.type,
-            status: item.status,
+            type,
+            status: (item as any).status,
             message: 'Valid Serial'
         });
 

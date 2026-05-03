@@ -17,15 +17,19 @@ export const authOptions: NextAuthOptions = {
                 await dbConnect();
 
                 try {
-                    const user = await User.findOne({
-                        $or: [
-                            { username: credentials.identifier },
-                            { email: credentials.identifier }
-                        ]
-                    });
+                    const identifier = credentials.identifier;
+                    let user;
+
+                    if (identifier === 'admin') {
+                        // Admin strictly uses username
+                        user = await User.findOne({ username: 'admin', role: 'MANUFACTURER' });
+                    } else if (identifier.includes('@')) {
+                        // Everyone else uses email
+                        user = await User.findOne({ email: identifier });
+                    }
 
                     if (!user) {
-                        throw new Error("No user found with this email");
+                        throw new Error("Invalid credentials or user not found");
                     }
 
                     const isPasswordCorrect = await bcrypt.compare(

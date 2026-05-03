@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
-import { Pallet, Carton, Unit } from "@/model/Item";
+import { findItemBySerial, getAggregatedHistory } from "@/lib/itemHelper";
 import ScanLog from "@/model/ScanLog";
 import { getShortHash } from "@/helpers/crypto";
 
@@ -14,27 +14,18 @@ export async function POST(req: Request) {
             return NextResponse.json({ status: 'INVALID', message: 'Missing Serial or Code' });
         }
 
-        // Search across collections
-        let item = await Pallet.findOne({ serial });
-        let type = 'PALLET';
-
-        if (!item) {
-            item = await Carton.findOne({ serial });
-            type = 'CARTON';
-        }
-
-        if (!item) {
-            item = await Unit.findOne({ serial });
-            type = 'UNIT';
-        }
+        // Search across all collections using centralized helper
+        const result = await findItemBySerial(serial);
 
         // 1. EXISTENCE CHECK
-        if (!item) {
+        if (!result) {
             await ScanLog.create({
                 serial, location, status: 'INVALID', stage: 'CONSUMER', notes: 'Serial not found'
             });
             return NextResponse.json({ status: 'INVALID', message: 'Product not found in database.' });
         }
+
+        const { item, type } = result;
 
         // 2. CRYPTO CHECK
         const validShortHash = getShortHash(item.hash);
@@ -65,52 +56,10 @@ export async function POST(req: Request) {
             serial, location, status, stage: 'CONSUMER', notes
         });
 
-        // --- HIERARCHICAL HISTORY LOGIC ---
-        let finalHistory: any[] = [];
+        // 5. AGGREGATE HIERARCHICAL HISTORY using centralized helper
+        const finalHistory = await getAggregatedHistory(item, type);
 
-        if (type === 'PALLET') {
-            finalHistory = item.history || [];
-        }
-        else if (type === 'CARTON') {
-            finalHistory = [...(item.history || [])];
-            if (item.parentId) {
-                const parentPallet = await Pallet.findById(item.parentId).lean();
-                if (parentPallet && parentPallet.history) {
-                    finalHistory = [...parentPallet.history, ...finalHistory];
-                }
-            }
-        }
-        else if (type === 'UNIT') {
-            // Logic: Grandparent Pallet + Parent Carton (Ignore Unit Journey)
-            if (item.parentId) {
-                const parentCarton = await Carton.findById(item.parentId).lean();
-                if (parentCarton) {
-                    if (parentCarton.history) {
-                        finalHistory = [...parentCarton.history];
-                    }
-                    if (parentCarton.parentId) {
-                        const grandParentPallet = await Pallet.findById(parentCarton.parentId).lean();
-                        if (grandParentPallet && grandParentPallet.history) {
-                            finalHistory = [...grandParentPallet.history, ...finalHistory];
-                        }
-                    }
-                }
-            }
-        }
-
-        // Deduplicate History based on Status + Location + Timestamp
-        const uniqueEvents = new Map();
-        finalHistory.forEach(event => {
-            const key = `${event.status}-${event.location}-${new Date(event.timestamp).getTime()}`;
-            if (!uniqueEvents.has(key)) {
-                uniqueEvents.set(key, event);
-            }
-        });
-        finalHistory = Array.from(uniqueEvents.values());
-
-        finalHistory.sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-
-        // 5. RETURN RESULT
+        // 6. RETURN RESULT
         return NextResponse.json({
             status,
             message: notes,

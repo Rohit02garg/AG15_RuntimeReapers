@@ -20,10 +20,7 @@ export async function POST(req: NextRequest) {
 
         await dbConnect();
 
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            return NextResponse.json({ message: "User already exists" }, { status: 400 });
-        }
+        // Removed username unique check as per user request
 
         const hashedPassword = await bcrypt.hash(password, 10);
 

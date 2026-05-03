@@ -6,21 +6,38 @@ import { sendEmail } from "@/helpers/mailer";
 export async function POST(req: NextRequest) {
     try {
         await dbConnect();
-        const { email } = await req.json();
+        const { identifier } = await req.json();
 
-        const user = await User.findOne({ email });
-
-        if (!user) {
-            // It is safer to return 200 even if user doesn't exist to prevent enumeration attacks,
-            // but for this MVP/Task we can return 404 or success with message.
-            // Let's return success msg "If email exists..." or specific error for easier debugging now.
-            return NextResponse.json({ message: "User not found" }, { status: 404 });
+        if (!identifier || typeof identifier !== "string") {
+            return NextResponse.json({ message: "Email or username is required" }, { status: 400 });
         }
 
-        await sendEmail({ email, emailType: "RESET", userId: user._id });
+        const normalizedIdentifier = identifier.trim();
+        const escapedIdentifier = normalizedIdentifier.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+        const user = await User.findOne({
+            $or: [
+                { email: { $regex: `^${escapedIdentifier}$`, $options: "i" } },
+                { username: normalizedIdentifier }
+            ]
+        });
+
+        if (!user) {
+            return NextResponse.json({
+                message: "If an account exists, a reset link has been sent"
+            });
+        }
+
+        if (!user.email) {
+            return NextResponse.json({
+                message: "This account has no email configured. Contact your administrator."
+            }, { status: 400 });
+        }
+
+        await sendEmail({ email: user.email, emailType: "RESET", userId: user._id });
 
         return NextResponse.json({
-            message: "Email sent successfully",
+            message: "If an account exists, a reset link has been sent",
             success: true
         })
 

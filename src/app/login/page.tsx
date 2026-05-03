@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck, ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -44,6 +44,13 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+            <button 
+                onClick={() => router.push('/')}
+                className="absolute top-8 left-8 z-20 text-muted-foreground hover:text-white transition-colors flex items-center gap-2"
+            >
+                <ArrowLeft className="w-4 h-4" /> Return to Home
+            </button>
+            
             {/* Background Ambience */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { signOut } from 'next-auth/react';
 
 export default function ManufacturerDashboard() {
     const [stats, setStats] = useState<any>(null);
@@ -54,9 +55,17 @@ export default function ManufacturerDashboard() {
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
 
             <div className="z-10 max-w-6xl mx-auto w-full">
-                <header className="mb-12 border-b border-white/10 pb-6">
-                    <h1 className="text-4xl font-bold neon-text text-white">Manufacturer Command Center</h1>
-                    <p className="text-muted-foreground mt-2">Manage production, distributors, and supply chain integrity.</p>
+                <header className="mb-12 border-b border-white/10 pb-6 flex justify-between items-start">
+                    <div>
+                        <h1 className="text-4xl font-bold neon-text text-white">Manufacturer Command Center</h1>
+                        <p className="text-muted-foreground mt-2">Manage production, distributors, and supply chain integrity.</p>
+                    </div>
+                    <button 
+                        onClick={() => signOut({ callbackUrl: '/login' })}
+                        className="bg-red-500/20 hover:bg-red-500/40 text-red-400 hover:text-red-300 border border-red-500/30 px-4 py-2 rounded-lg font-bold transition-all text-sm flex items-center gap-2"
+                    >
+                        Sign Out
+                    </button>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

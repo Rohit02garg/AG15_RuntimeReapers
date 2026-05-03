@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
 import dbConnect from '@/lib/dbConnect';
-import Item from '@/model/Item';
+import { Pallet, Carton, Unit } from '@/model/Item';
 import ScanLog from '@/model/ScanLog';
 import { scanSchema } from '@/schemas/scanSchema';
 
@@ -19,6 +21,15 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 export async function POST(req: NextRequest) {
     try {
+        // Authentication Guard — only supply chain staff can scan
+        const session = await getServerSession(authOptions);
+        if (!session || !['MANUFACTURER', 'DISTRIBUTOR'].includes(session.user?.role || '')) {
+            return NextResponse.json(
+                { error: 'Unauthorized. Staff access required.' },
+                { status: 401 }
+            );
+        }
+
         const body = await req.json();
 
         // 1. Validate Input
@@ -31,10 +42,11 @@ export async function POST(req: NextRequest) {
 
         await dbConnect();
 
-        // 2. Fetch Item
-        const item = await Item.findOne({ serial });
+        // 2. Fetch Item (search across all collections)
+        let item = await Pallet.findOne({ serial }) ||
+                   await Carton.findOne({ serial }) ||
+                   await Unit.findOne({ serial });
         if (!item) {
-            // Log invalid scan attempt?
             return NextResponse.json({ status: 'INVALID', message: 'Item not found in database' }, { status: 404 });
         }
 
@@ -105,11 +117,15 @@ export async function POST(req: NextRequest) {
             notes: anomalyReason || (lat ? `Lat:${lat},Long:${long}` : undefined)
         });
 
-        // 5. Update Item Status if Valid
-        if (status === 'VALID' && stage === 'CONSUMER') {
-            await Item.updateOne({ serial }, { status: 'SOLD' });
-        } else if (status === 'VALID' && stage === 'DISTRIBUTOR') {
-            await Item.updateOne({ serial }, { status: 'SHIPPED' });
+        // 5. Update Item Status if Valid (update across appropriate collection)
+        if (status === 'VALID' && (stage === 'CONSUMER' || stage === 'DISTRIBUTOR')) {
+            const newStatus = stage === 'CONSUMER' ? 'SOLD' : 'SHIPPED';
+            // Update whichever collection has this serial
+            await Promise.all([
+                Pallet.updateOne({ serial }, { status: newStatus }),
+                Carton.updateOne({ serial }, { status: newStatus }),
+                Unit.updateOne({ serial }, { status: newStatus })
+            ]);
         }
 
         return NextResponse.json({

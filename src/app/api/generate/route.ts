@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
 import dbConnect from '@/lib/dbConnect';
 import { Pallet, Carton, Unit } from '@/model/Item';
 import { generateSchema } from '@/schemas/generateSchema';
@@ -8,6 +10,15 @@ import mongoose from 'mongoose';
 
 export async function POST(req: NextRequest) {
     try {
+        // Authentication Guard — only MANUFACTURER role can generate batches
+        const session = await getServerSession(authOptions);
+        if (!session || session.user?.role !== 'MANUFACTURER') {
+            return NextResponse.json(
+                { error: 'Unauthorized. Manufacturer access required.' },
+                { status: 401 }
+            );
+        }
+
         const body = await req.json();
 
         // 1. Validate Input
@@ -77,6 +88,7 @@ export async function POST(req: NextRequest) {
             // C. Construct Object
             batch.push({
                 serial,
+                name: "", // Explicitly setting it so it shows up in MongoDB viewer
                 // hash: fullHash (long), shortHash: shortHash (short)
                 hash: fullHash,
                 shortHash: shortHash,

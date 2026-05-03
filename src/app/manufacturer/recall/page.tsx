@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { TriangleAlert, AlertOctagon, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function RecallPage() {
     const [serial, setSerial] = useState('');
     const [reason, setReason] = useState('Safety Concern');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
     const handleRecall = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -48,9 +50,9 @@ export default function RecallPage() {
                     <h1 className="text-xl font-bold text-orange-500 flex items-center gap-2 tracking-wide">
                         <AlertOctagon className="w-6 h-6" /> Decommission Protocol
                     </h1>
-                    <Link href="/manufacturer/dashboard" className="text-muted-foreground hover:text-white text-sm flex items-center gap-1 transition-colors">
-                        <ArrowLeft className="w-3 h-3" /> Cancel
-                    </Link>
+                    <button onClick={() => router.back()} className="text-muted-foreground hover:text-white text-sm flex items-center gap-1 transition-colors">
+                        <ArrowLeft className="w-3 h-3" /> Go Back
+                    </button>
                 </div>
 
                 <p className="mb-8 text-muted-foreground text-sm leading-relaxed">

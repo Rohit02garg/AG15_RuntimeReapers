@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IItem extends Document {
     serial: string;
+    name?: string;
     type: 'UNIT' | 'CARTON' | 'PALLET';
     parentId?: mongoose.Types.ObjectId;
     path?: string; // Materialized path for hierarchy query
@@ -30,6 +31,7 @@ const HistorySchema = new Schema({
 // 1. PALLET Model
 const PalletSchema = new Schema({
     serial: { type: String, required: true, unique: true, index: true },
+    name: { type: String, default: "" },
     hash: { type: String, required: true },
     shortHash: { type: String, required: true }, // 8-char substring
     status: { type: String, default: 'CREATED' },
@@ -42,6 +44,7 @@ const Pallet = (mongoose.models.Pallet as mongoose.Model<IItem>) || mongoose.mod
 // 2. CARTON Model
 const CartonSchema = new Schema({
     serial: { type: String, required: true, unique: true, index: true },
+    name: { type: String, default: "" },
     parentId: { type: Schema.Types.ObjectId, ref: 'Pallet', index: true }, // Links to Pallet
     hash: { type: String, required: true },
     shortHash: { type: String, required: true },
@@ -55,6 +58,7 @@ const Carton = (mongoose.models.Carton as mongoose.Model<IItem>) || mongoose.mod
 // 3. UNIT Model
 const UnitSchema = new Schema({
     serial: { type: String, required: true, unique: true, index: true },
+    name: { type: String, default: "" },
     parentId: { type: Schema.Types.ObjectId, ref: 'Carton', index: true }, // Links to Carton
     hash: { type: String, required: true },
     shortHash: { type: String, required: true },

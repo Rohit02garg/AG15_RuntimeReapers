@@ -6,7 +6,10 @@ export const userRegistrationSchema = z.object({
         .max(20, "Username must be less than 20 characters")
         .trim(),
     password: z.string()
-        .min(6, "Password must be at least 6 characters"),
+        .min(8, "Password must be at least 8 characters")
+        .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+        .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+        .regex(/[0-9]/, "Password must contain at least one number"),
     role: z.enum(['MANUFACTURER', 'DISTRIBUTOR', 'RETAILER']).optional()
 });
 
@@ -21,7 +24,10 @@ export const distributorRegistrationSchema = z.object({
     email: z.string().email("Invalid email format"),
     phone: z.string().min(10, "Phone number must be at least 10 digits"),
     password: z.string()
-        .min(6, "Password must be at least 6 characters"),
+        .min(8, "Password must be at least 8 characters")
+        .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+        .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+        .regex(/[0-9]/, "Password must contain at least one number"),
     city: z.string().min(2, "City is required"),
     pincode: z.string().min(4, "Invalid Pincode").max(10),
     gps: z.string()

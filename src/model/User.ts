@@ -23,7 +23,6 @@ const UserSchema: Schema<IUser> = new Schema({
     username: {
         type: String,
         required: [true, 'Username is required'],
-        unique: true,
         trim: true
     },
     businessId: {

@@ -38,16 +38,18 @@ export async function POST(req: Request) {
 
         const { username, password, businessId, city, pincode, gps, email, phone } = result.data;
 
-        // Check for existing Username
-        const existingUsername = await User.findOne({ username });
-        if (existingUsername) {
-            return NextResponse.json({ success: false, errors: { username: "Username already taken" }, message: "Validation Failed" }, { status: 400 });
-        }
+        // Removed username unique check as per user request
 
         // Check for existing Business ID
         const existingBusinessId = await User.findOne({ businessId });
         if (existingBusinessId) {
             return NextResponse.json({ success: false, errors: { businessId: "Business ID already registered" }, message: "Validation Failed" }, { status: 400 });
+        }
+
+        // Check for existing Email
+        const existingEmail = await User.findOne({ email });
+        if (existingEmail) {
+            return NextResponse.json({ success: false, errors: { email: "Email is already registered" }, message: "Validation Failed" }, { status: 400 });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
